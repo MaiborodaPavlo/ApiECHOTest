@@ -13,10 +13,18 @@
 @interface ServerManager : NSObject
 
 + (instancetype) sharedManager;
++ (NSString *) randomLocale;
 
-- (NSString *) login: (PMLogin *) login;
-- (NSString *) signUp: (PMSignUp *) signUp;
+- (void) login: (PMLogin *) login
+     onSuccess: (void(^)(void)) success
+     onFailure: (void(^)(NSError* error)) failure;
 
-//- (void) textForLocale;
+- (void) signUp: (PMSignUp *) signUp
+      onSuccess: (void(^)(void)) success
+      onFailure: (void(^)(NSError* error)) failure;
+
+- (void) textForLocale: (NSString *) locale
+             onSuccess: (void(^)(NSString *text)) success
+             onFailure: (void(^)(NSError* error)) failure;
 
 @end

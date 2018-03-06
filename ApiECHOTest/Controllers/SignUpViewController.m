@@ -7,14 +7,16 @@
 //
 
 #import "SignUpViewController.h"
-#import "ViewController.h"
 #import "PMSignUp.h"
+
+#import "ServerManager.h"
 
 @interface SignUpViewController () <UITextFieldDelegate>
 
 @property (weak, nonatomic) IBOutlet UITextField *nameTextField;
 @property (weak, nonatomic) IBOutlet UITextField *emailTextField;
 @property (weak, nonatomic) IBOutlet UITextField *passwordTextField;
+@property (weak, nonatomic) IBOutlet UIActivityIndicatorView *spinner;
 
 @end
 
@@ -27,23 +29,27 @@
     [self.nameTextField becomeFirstResponder];
 }
 
-#pragma mark - Navigation
+- (IBAction)signUpAction:(UIButton *)sender {
+    
+    [self.spinner startAnimating];
+    
+    PMSignUp *signUp = [[PMSignUp alloc] init];
+    signUp.name = self.nameTextField.text;
+    signUp.email = self.emailTextField.text;
+    signUp.password = self.passwordTextField.text;
+    
+    [[ServerManager sharedManager] signUp: signUp
+                                onSuccess:^{
+                                   [self.spinner stopAnimating];
+                                   UINavigationController *nav = [self.storyboard instantiateViewControllerWithIdentifier: @"NavigationController"];
+                                   [self presentViewController: nav animated: YES completion: nil];
+                               }
+                                onFailure:^(NSError *error) {
+                                   [self.spinner stopAnimating];
+                                   NSLog(@"ERROR: %@", [error localizedDescription]);
+                               }];
+}
 
- - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
- 
-     if ([segue.identifier isEqualToString: @"signUp"]) {
-         if ([segue.destinationViewController isKindOfClass: [ViewController class]]) {
-         
-             PMSignUp *signUp = [[PMSignUp alloc] init];
-             signUp.email = self.emailTextField.text;
-             signUp.password = self.passwordTextField.text;
-             signUp.name = self.nameTextField.text;
-             
-             ViewController *vc = (ViewController *) segue.destinationViewController;
-             vc.signUp = signUp;
-         }
-     }
- }
 
 #pragma mark - UITextFieldDelegate
 

@@ -7,13 +7,18 @@
 //
 
 #import "LoginViewController.h"
-#import "ViewController.h"
+#import "TextViewController.h"
+#import "SignUpViewController.h"
+
 #import "PMLogin.h"
+
+#import "ServerManager.h"
 
 @interface LoginViewController () <UITextFieldDelegate>
 
 @property (weak, nonatomic) IBOutlet UITextField *emailTextField;
 @property (weak, nonatomic) IBOutlet UITextField *passwordTextField;
+@property (weak, nonatomic) IBOutlet UIActivityIndicatorView *spinner;
 
 @end
 
@@ -24,24 +29,30 @@
     [super viewDidLoad];
     
     [self.emailTextField becomeFirstResponder];
+    
 }
 
-#pragma mark - Navigation
+#pragma mark - Actions
 
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+- (IBAction)loginAction:(UIButton *)sender {
     
-    if ([segue.identifier isEqualToString: @"login"]) {
-        if ([segue.destinationViewController isKindOfClass: [ViewController class]]) {
-            
-            PMLogin *login = [[PMLogin alloc] init];
-            login.email = self.emailTextField.text;
-            login.password = self.passwordTextField.text;
-            
-            ViewController *vc = (ViewController *) segue.destinationViewController;
-            vc.login = login;
-        }
+    [self.spinner startAnimating];
+    
+    PMLogin *login = [[PMLogin alloc] init];
+    login.email = self.emailTextField.text;
+    login.password = self.passwordTextField.text;
+    
+    [[ServerManager sharedManager] login: login
+                               onSuccess:^{
+        [self.spinner stopAnimating];
+                                   
+        UINavigationController *nav = [self.storyboard instantiateViewControllerWithIdentifier: @"NavigationController"];
+        [self presentViewController: nav animated: YES completion: nil];
     }
+                               onFailure:^(NSError *error) {
+        [self.spinner stopAnimating];
+        NSLog(@"ERROR: %@", [error localizedDescription]);
+    }];
 }
 
 #pragma mark - UITextFieldDelegate
